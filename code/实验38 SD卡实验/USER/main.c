@@ -5,7 +5,13 @@
 #include "lcd.h"
 #include "key.h"  
 #include "malloc.h" 
-#include "sdio_sdcard.h"    
+#include "sdio_sdcard.h"  
+
+/***********add huangcheng***********/
+#include "myiic.h"  
+/***********add huangcheng***********/
+
+
 //ALIENTEK 探索者STM32F407开发板 实验38
 //SD卡 实验 -库函数版本
 //技术支持：www.openedv.com
@@ -30,6 +36,9 @@ void show_sdcard_info(void)
  	printf("Card BlockSize:%d\r\n\r\n",SDCardInfo.CardBlockSize);			//显示块大小
 }
 
+/***********add huangcheng***********/
+int flag = 0;	//tp 全局变量
+/***********add huangcheng***********/
 
 int main(void)
 {        
@@ -53,7 +62,20 @@ int main(void)
 	LCD_ShowString(30,70,200,16,16,"SD CARD TEST");	
 	LCD_ShowString(30,90,200,16,16,"ATOM@ALIENTEK");
 	LCD_ShowString(30,110,200,16,16,"2014/5/15");   
-	LCD_ShowString(30,130,200,16,16,"KEY0:Read Sector 0");	   
+	LCD_ShowString(30,130,200,16,16,"KEY0:Read Sector 0");	 
+
+/***********add huangcheng***********/
+	lcd_init();
+	IIC_Init();
+	ctp_hynitron_cst0_init();
+	delay_ms(1000);
+	while(0){
+		if(flag == 1){
+			ctp_hynitron_cst0_get_data(NULL);
+			flag = 0;
+		}
+	}
+/***********add huangcheng***********/
  	while(SD_Init())//检测不到SD卡
 	{
 		LCD_ShowString(30,150,200,16,16,"SD Card Error!");
