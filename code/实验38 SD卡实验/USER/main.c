@@ -10,6 +10,9 @@
 /***********add huangcheng***********/
 #include "myiic.h"  
 #include "timer.h"
+//#include "lvgl.h" 
+#include "lv_port_disp.h" 
+#include "lv_port_indev.h" 
 /***********add huangcheng***********/
 
 
@@ -76,6 +79,14 @@ int main(void)
 			ctp_hynitron_cst0_get_data(NULL);
 			flag = 0;
 		}
+	}
+	lv_init();
+	lv_port_disp_init();
+	lv_port_indev_init();
+	
+	lv_obj_test_start();
+	while(1){
+		lv_task_handler();
 	}
 /***********add huangcheng***********/
  	while(SD_Init())//¼ì²â²»µ½SD¿¨

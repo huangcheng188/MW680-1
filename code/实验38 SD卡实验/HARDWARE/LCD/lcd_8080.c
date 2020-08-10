@@ -125,7 +125,7 @@ void DispColor(unsigned int color)
 }
 
 //add huangcheng for littleVGL port
-void lcd_fill_color_1(u16 sx,u16 sy,u16 ex,u16 ey,u16 *color)
+void lcd_fill_color(u16 sx,u16 sy,u16 ex,u16 ey,u16 *color)
 {
 	u16 height,width;
 	u16 i,j;
