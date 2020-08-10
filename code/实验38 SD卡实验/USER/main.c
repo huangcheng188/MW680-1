@@ -12,7 +12,8 @@
 #include "timer.h"
 //#include "lvgl.h" 
 #include "lv_port_disp.h" 
-#include "lv_port_indev.h" 
+#include "lv_port_indev.h"
+#include "capacitive_tp_hynitron_cst0xx.h"
 
 #include "sram.h" 
 #include "usmart.h"  
@@ -47,7 +48,7 @@ void show_sdcard_info(void)
 }
 
 /***********add huangcheng***********/
-int flag = 0;	//tp 全局变量
+
 /***********add huangcheng***********/
 
 int main(void)
@@ -85,9 +86,9 @@ int main(void)
 	delay_ms(1000);
 	TIM3_Int_Init( 999, 83);
 	while(0){
-		if(flag == 1){
+		if(tp_t.int_flag == 1){
 			ctp_hynitron_cst0_get_data(NULL);
-			flag = 0;
+			tp_t.int_flag = 0;
 		}
 	}
 	lv_init();
@@ -124,6 +125,7 @@ int main(void)
 	}													    
 	LCD_Fill(30,150,240,150+16,WHITE);		//清除显示	
 #endif
+	show_sdcard_info();
 	while(exf_getfree("0",&total,&free))	//得到SD卡的总容量和剩余容量
 	{
 		LCD_ShowString(30,150,200,16,16,"SD Card Fatfs Error!");
@@ -141,9 +143,9 @@ int main(void)
  	LCD_ShowNum(30+8*14,190,free>>10,5,16);					//显示SD卡剩余容量 MB			    
 	while(1)
 	{
-		t++; 
+		//t++; 
 		//delay_ms(200);		 			   
-		LED0=!LED0;
+		//LED0=!LED0;
 		lv_task_handler();
 	} 
 }

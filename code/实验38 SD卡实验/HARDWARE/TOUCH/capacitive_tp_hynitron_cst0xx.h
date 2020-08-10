@@ -18,6 +18,7 @@
 typedef struct {
 	u16 x;
 	u16 y;
+	u8 int_flag;
 }tp_struct;
 extern tp_struct tp_t;
 //_TODO:

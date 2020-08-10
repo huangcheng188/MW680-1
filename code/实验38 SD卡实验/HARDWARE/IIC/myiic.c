@@ -1,6 +1,7 @@
 #include "myiic.h"
 #include "delay.h"
 #include "stm32f4xx.h"
+#include "capacitive_tp_hynitron_cst0xx.h"
 //////////////////////////////////////////////////////////////////////////////////	 
 //本程序只供学习使用，未经作者许可，不得用于其它任何用途
 //ALIENTEK STM32F407开发板
@@ -68,14 +69,14 @@ void IIC_Init(void)
 	 EXTI_InitStructure.EXTI_LineCmd = ENABLE;
 	 EXTI_Init(&EXTI_InitStructure);
 }
-extern int flag;
+
 void EXTI0_IRQHandler(void)
 {
     if(EXTI_GetITStatus(EXTI_Line0) != RESET) //确保是否产生了EXTI Line中断
     {
       	//printf("i");
       	//ctp_hynitron_cst0_get_data(NULL);
-      	flag = 1;
+      	tp_t.int_flag = 1;
         EXTI_ClearITPendingBit(EXTI_Line0);//清除中断标志位
     } 
 }

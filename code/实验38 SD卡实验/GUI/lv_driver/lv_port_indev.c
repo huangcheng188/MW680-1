@@ -190,7 +190,6 @@ static void touchpad_init(void)
 }
 
 tp_struct tp_t;//add huang
-extern int flag;
 /* Will be called by the library to read the touchpad */
 static bool touchpad_read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data)
 {
@@ -211,9 +210,9 @@ static bool touchpad_read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data)
 
     /*Return `false` because we are not buffering and no more data to read*/
 #endif
-    if(flag == 1){
+    if(tp_t.int_flag == 1){
 		if(ctp_hynitron_cst0_get_data(&tp_t) == CTP_FALSE){
-			flag = 0;
+			tp_t.int_flag = 0;
 			  return false;
 		}
 		last_x = tp_t.x;
