@@ -13,6 +13,12 @@
 //#include "lvgl.h" 
 #include "lv_port_disp.h" 
 #include "lv_port_indev.h" 
+
+#include "sram.h" 
+#include "usmart.h"  
+#include "w25qxx.h"    
+#include "ff.h"  
+#include "exfuns.h" 
 /***********add huangcheng***********/
 
 
@@ -50,6 +56,10 @@ int main(void)
 	u32 sd_size;
 	u8 t=0;	
 	u8 *buf;
+	
+	u32 total,free;	
+	u8 res=0;
+	
 
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);//设置系统中断优先级分组2
 	delay_init(168);  //初始化延时函数
@@ -57,7 +67,7 @@ int main(void)
 	LED_Init();					//初始化LED  
  	LCD_Init();					//LCD初始化  
  	KEY_Init();					//按键初始化  
-	
+	W25QXX_Init();				//初始化W25Q128	
 	my_mem_init(SRAMIN);		//初始化内部内存池 
 	my_mem_init(SRAMCCM);		//初始化CCM内存池
 	
@@ -85,7 +95,7 @@ int main(void)
 	lv_port_indev_init();
 	
 	lv_obj_test_start();
-	while(1){
+	while(0){
 		lv_task_handler();
 	}
 /***********add huangcheng***********/
@@ -97,36 +107,46 @@ int main(void)
 		delay_ms(500);
 		LED0=!LED0;//DS0闪烁
 	}
-	show_sdcard_info();	//打印SD卡相关信息
- 	POINT_COLOR=BLUE;	//设置字体为蓝色 
-	//检测SD卡成功 											    
-	LCD_ShowString(30,150,200,16,16,"SD Card OK    ");
-	LCD_ShowString(30,170,200,16,16,"SD Card Size:     MB");
-	LCD_ShowNum(30+13*8,170,SDCardInfo.CardCapacity>>20,5,16);//显示SD卡容量
+	exfuns_init();							//为fatfs相关变量申请内存				 
+  	f_mount(fs[0],"0:",1); 					//挂载SD卡
+#if 0
+ 	res=f_mount(fs[1],"1:",1); 				//挂载FLASH.	
+	if(res==0X0D)//FLASH磁盘,FAT文件系统错误,重新格式化FLASH
+	{
+		LCD_ShowString(30,150,200,16,16,"Flash Disk Formatting...");	//格式化FLASH
+		res=f_mkfs("1:",1,4096);//格式化FLASH,1,盘符;1,不需要引导区,8个扇区为1个簇
+		if(res==0)
+		{
+			f_setlabel((const TCHAR *)"1:ALIENTEK");	//设置Flash磁盘的名字为：ALIENTEK
+			LCD_ShowString(30,150,200,16,16,"Flash Disk Format Finish");	//格式化完成
+		}else LCD_ShowString(30,150,200,16,16,"Flash Disk Format Error ");	//格式化失败
+		delay_ms(1000);
+	}													    
+	LCD_Fill(30,150,240,150+16,WHITE);		//清除显示	
+#endif
+	while(exf_getfree("0",&total,&free))	//得到SD卡的总容量和剩余容量
+	{
+		LCD_ShowString(30,150,200,16,16,"SD Card Fatfs Error!");
+		delay_ms(200);
+		LCD_Fill(30,150,240,150+16,WHITE);	//清除显示			  
+		delay_ms(200);
+		LED0=!LED0;//DS0闪烁
+	}				
+	printf("sd SD Total Size:  %d   MB  SD  Free Size:  %d   MB",total>>10,free>>10);
+ 	POINT_COLOR=BLUE;//设置字体为蓝色	   
+	LCD_ShowString(30,150,200,16,16,"FATFS OK!");	 
+	LCD_ShowString(30,170,200,16,16,"SD Total Size:     MB");	 
+	LCD_ShowString(30,190,200,16,16,"SD  Free Size:     MB"); 	    
+ 	LCD_ShowNum(30+8*14,170,total>>10,5,16);				//显示SD卡总容量 MB
+ 	LCD_ShowNum(30+8*14,190,free>>10,5,16);					//显示SD卡剩余容量 MB			    
 	while(1)
 	{
-		key=KEY_Scan(0);
-		if(key==KEY0_PRES)//KEY0按下了
-		{
-			buf=mymalloc(0,512);		//申请内存
-			if(SD_ReadDisk(buf,0,1)==0)	//读取0扇区的内容
-			{	
-				LCD_ShowString(30,190,200,16,16,"USART1 Sending Data...");
-				printf("SECTOR 0 DATA:\r\n");
-				for(sd_size=0;sd_size<512;sd_size++)printf("%x ",buf[sd_size]);//打印0扇区数据    	   
-				printf("\r\nDATA ENDED\r\n");
-				LCD_ShowString(30,190,200,16,16,"USART1 Send Data Over!");
-			}
-			myfree(0,buf);//释放内存	   
-		}   
-		t++;
-		delay_ms(10);
-		if(t==20)
-		{
-			LED0=!LED0;
-			t=0;
-		}
-	} }
+		t++; 
+		//delay_ms(200);		 			   
+		LED0=!LED0;
+		lv_task_handler();
+	} 
+}
 
 
 
