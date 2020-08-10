@@ -9,6 +9,7 @@
 
 /***********add huangcheng***********/
 #include "myiic.h"  
+#include "timer.h"
 /***********add huangcheng***********/
 
 
@@ -69,6 +70,7 @@ int main(void)
 	IIC_Init();
 	ctp_hynitron_cst0_init();
 	delay_ms(1000);
+	TIM3_Int_Init( 999, 83);
 	while(0){
 		if(flag == 1){
 			ctp_hynitron_cst0_get_data(NULL);
