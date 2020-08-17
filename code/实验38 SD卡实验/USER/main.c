@@ -49,6 +49,9 @@ void show_sdcard_info(void)
 
 /***********add huangcheng***********/
 
+ u8 *picture_map_data;
+
+
 /***********add huangcheng***********/
 
 int main(void)
@@ -65,13 +68,19 @@ int main(void)
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);//设置系统中断优先级分组2
 	delay_init(168);  //初始化延时函数
 	uart_init(115200);		//初始化串口波特率为115200
-	LED_Init();					//初始化LED  
+	//LED_Init();					//初始化LED  
  	LCD_Init();					//LCD初始化  
- 	KEY_Init();					//按键初始化  
-	W25QXX_Init();				//初始化W25Q128	
+ 	//KEY_Init();					//按键初始化  
+	//W25QXX_Init();				//初始化W25Q128	
 	my_mem_init(SRAMIN);		//初始化内部内存池 
 	my_mem_init(SRAMCCM);		//初始化CCM内存池
 	
+	FSMC_SRAM_Init();			//3?ê??ˉía2?SRAM
+	my_mem_init(SRAMEX);
+	picture_map_data = mymalloc( SRAMEX, 240*240*3);
+	if(picture_map_data == NULL)
+		printf("\r\n error myalloc");
+	myfree(SRAMEX, picture_map_data);
  	POINT_COLOR=RED;//设置字体为红色 
 	LCD_ShowString(30,50,200,16,16,"Explorer STM32F4");	
 	LCD_ShowString(30,70,200,16,16,"SD CARD TEST");	
@@ -94,11 +103,14 @@ int main(void)
 	lv_init();
 	lv_port_disp_init();
 	lv_port_indev_init();
+	lv_port_fs_init();
 	
-	lv_obj_test_start();
+	//lv_obj_test_start();
 	while(0){
 		lv_task_handler();
 	}
+
+	//picture_map_data[1000] = 0xff;
 /***********add huangcheng***********/
  	while(SD_Init())//检测不到SD卡
 	{
@@ -110,6 +122,31 @@ int main(void)
 	}
 	exfuns_init();							//为fatfs相关变量申请内存				 
   	f_mount(fs[0],"0:",1); 					//挂载SD卡
+#if 0 //test fatfs open file 
+  	FIL fp;
+	lv_fs_file_t fs;
+	u8 buff[10];
+	u32 num;
+	res = f_open( &fp, "0:/picture/picture.bin", FA_READ);
+	printf("\r\n f_open ret =%d size =  %d",res,fp.fsize);
+	f_close(   &fp);
+	
+	res = lv_fs_open( &fs, "P:/picture/picture.bin", FA_READ|FA_OPEN_ALWAYS);
+	printf("\r\n lv_fs_open ret =%d  size =  %d",res,fs.drv->file_size);
+	res = lv_fs_read( &fs, buff, 4, &num);
+	printf("\r\nres = %d mun =%d",res,num);
+	printf("\r\nread buff = %x %x %x %x",buff[0],buff[1],buff[2],buff[3]);
+	lv_fs_close( &fs);
+
+	res = lv_fs_open( &fs, "P:/picture/hello.txt", FA_WRITE|FA_OPEN_ALWAYS);
+	printf("\r\n open creat ret =%d",res);
+	//res = lv_fs_read( &fs, buff, 2, &num);
+	res  = lv_fs_write( &fs, "123", 3, &num);
+	printf("\r\nres = %d mun =%d",res,num);
+	printf("\r\n buff = %s",buff);
+	lv_fs_close( &fs);
+#endif 
+	lv_obj_test_start();
 #if 0
  	res=f_mount(fs[1],"1:",1); 				//挂载FLASH.	
 	if(res==0X0D)//FLASH磁盘,FAT文件系统错误,重新格式化FLASH
@@ -147,7 +184,7 @@ int main(void)
 		//delay_ms(200);		 			   
 		//LED0=!LED0;
 		lv_task_handler();
-	} 
+	}
 }
 
 

@@ -145,7 +145,7 @@ typedef void * lv_group_user_data_t;
 #define LV_USE_GPU              0
 
 /* 1: Enable file system (might be required for images */
-#define LV_USE_FILESYSTEM       0
+#define LV_USE_FILESYSTEM       1
 #if LV_USE_FILESYSTEM
 /*Declare the type of the user data of file system drivers (can be e.g. `void *`, `int`, `struct`)*/
 typedef void * lv_fs_drv_user_data_t;
